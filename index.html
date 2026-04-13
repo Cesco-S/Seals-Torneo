@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -108,6 +107,23 @@
             <div>
               <label>4° e 5° posto</label>
               <input id="fourthFifthBonus" type="number" value="3" />
+            </div>
+          </div>
+
+          <div class="section-space">
+            <h3>Best Of</h3>
+            <div class="row" style="grid-template-columns: 240px 220px 1fr;">
+              <div class="subtle" style="display:flex; align-items:center; gap:10px;">
+                <input id="bestOfEnabled" type="checkbox" style="width:auto;" />
+                <label for="bestOfEnabled" style="margin:0;">Attiva Best Of</label>
+              </div>
+              <div>
+                <label>Round da contare</label>
+                <input id="bestOfCount" type="number" min="1" step="1" value="3" />
+              </div>
+              <div class="muted" style="display:flex; align-items:center;">
+                Esempio: 4 round giocati, 3 contati. Il round peggiore viene escluso sia dalla classifica squadre sia dalla classifica giocatori.
+              </div>
             </div>
           </div>
         </div>
@@ -254,11 +270,52 @@ function findRoundMeta(roundId) { return globalRounds.find(r => r.id === roundId
 function getActiveRoundMeta() { return findRoundMeta(activeRoundId); }
 function getRoundData(team, roundId) { return team?.rounds?.[roundId]; }
 
+
+function getBestOfConfig() {
+  return {
+    enabled: !!document.getElementById("bestOfEnabled")?.checked,
+    roundsToCount: Math.max(1, Number(document.getElementById("bestOfCount")?.value || 1))
+  };
+}
+
+function getRankedRoundsForTeam(team) {
+  const rows = [];
+  for (const roundMeta of globalRounds) {
+    const round = team.rounds[roundMeta.id];
+    if (!round) continue;
+    const totalKills = Object.values(round.killsByPlayer || {}).reduce((s, n) => s + (Number(n) || 0), 0);
+    const points = totalKills * rules().killPoints + placementBonus(round.placement);
+    rows.push({
+      roundId: roundMeta.id,
+      roundName: roundMeta.name,
+      totalKills,
+      points
+    });
+  }
+  rows.sort((a, b) => b.points - a.points || b.totalKills - a.totalKills || a.roundName.localeCompare(b.roundName));
+  return rows;
+}
+
+function getCountedRoundIdsForTeam(team) {
+  const cfg = getBestOfConfig();
+  const ranked = getRankedRoundsForTeam(team);
+  if (!cfg.enabled) return new Set(ranked.map(r => r.roundId));
+  return new Set(ranked.slice(0, Math.min(cfg.roundsToCount, ranked.length)).map(r => r.roundId));
+}
+
 function teamTotals(team) {
   let totalKills = 0;
   let totalPoints = 0;
+  let rawTotalKills = 0;
+  let rawTotalPoints = 0;
   const perPlayer = {};
-  for (const p of team.players) perPlayer[p.id] = 0;
+  const rawPerPlayer = {};
+  for (const p of team.players) {
+    perPlayer[p.id] = 0;
+    rawPerPlayer[p.id] = 0;
+  }
+
+  const countedRoundIds = getCountedRoundIdsForTeam(team);
 
   for (const roundMeta of globalRounds) {
     const round = team.rounds[roundMeta.id];
@@ -267,12 +324,24 @@ function teamTotals(team) {
     const rPoints = rKills * rules().killPoints + placementBonus(round.placement);
     round.totalKills = rKills;
     round.points = rPoints;
-    totalKills += rKills;
-    totalPoints += rPoints;
-    for (const p of team.players) perPlayer[p.id] += Number(round.killsByPlayer[p.id] || 0);
+    round.isCounted = countedRoundIds.has(roundMeta.id);
+
+    rawTotalKills += rKills;
+    rawTotalPoints += rPoints;
+
+    if (round.isCounted) {
+      totalKills += rKills;
+      totalPoints += rPoints;
+    }
+
+    for (const p of team.players) {
+      const kills = Number(round.killsByPlayer[p.id] || 0);
+      rawPerPlayer[p.id] += kills;
+      if (round.isCounted) perPlayer[p.id] += kills;
+    }
   }
 
-  return { totalKills, totalPoints, perPlayer };
+  return { totalKills, totalPoints, perPlayer, rawTotalKills, rawTotalPoints, rawPerPlayer };
 }
 
 function rankedTeams() {
@@ -280,6 +349,7 @@ function rankedTeams() {
     .map(team => ({ ...team, stats: teamTotals(team) }))
     .sort((a, b) => b.stats.totalPoints - a.stats.totalPoints || b.stats.totalKills - a.stats.totalKills || a.name.localeCompare(b.name));
 }
+
 
 function rankedPlayers() {
   const rows = [];
@@ -289,11 +359,12 @@ function rankedPlayers() {
       rows.push({
         teamName: team.name,
         playerName: player.name,
-        kills: totals.perPlayer[player.id] || 0
+        kills: totals.perPlayer[player.id] || 0,
+        rawKills: totals.rawPerPlayer[player.id] || 0
       });
     }
   }
-  const sorted = rows.sort((a, b) => b.kills - a.kills || a.playerName.localeCompare(b.playerName));
+  const sorted = rows.sort((a, b) => b.kills - a.kills || b.rawKills - a.rawKills || a.playerName.localeCompare(b.playerName));
   let currentRank = 0;
   let lastKills = null;
   let seen = 0;
@@ -419,6 +490,26 @@ function updatePlayerName(teamId, playerId, value) {
   render();
 }
 
+
+function validateRoundPlacements(roundId) {
+  const counts = {};
+
+  for (const team of teams) {
+    const round = team.rounds?.[roundId];
+    if (!round) continue;
+    const val = Number(round.placement) || 0;
+    if (!val) continue;
+    counts[val] = (counts[val] || 0) + 1;
+  }
+
+  for (const team of teams) {
+    const round = team.rounds?.[roundId];
+    if (!round) continue;
+    const val = Number(round.placement) || 0;
+    round.placementError = !!(val && counts[val] > 1);
+  }
+}
+
 function updateRoundPlacement(teamId, roundId, value) {
   const team = findTeam(teamId);
   const round = getRoundData(team, roundId);
@@ -427,12 +518,7 @@ function updateRoundPlacement(teamId, roundId, value) {
   const nextValue = Number(value) || "";
   round.placement = nextValue;
 
-  // mark conflict instead of blocking
-  round.placementError = false;
-  if (nextValue && !isPlacementUnique(teamId, roundId, nextValue)) {
-    round.placementError = true;
-  }
-
+  validateRoundPlacements(roundId);
   render();
 }
 
@@ -529,12 +615,14 @@ function applySheetLayout(ws, rows) {
   ws["!cols"] = autoFitColumnsFromRows(rows);
 }
 
+
 function exportJson() {
   const eventTitle = document.getElementById("eventTitle")?.value?.trim() || "Tool Seals Torneo";
   const ranked = rankedTeams();
   const winner = ranked[0] || null;
   const second = ranked[1] || null;
   const third = ranked[2] || null;
+  const cfg = getBestOfConfig();
 
   const playerRankingRows = (() => {
     const rows = [];
@@ -544,19 +632,20 @@ function exportJson() {
         rows.push({
           Squadra: team.name,
           Giocatore: player.name,
-          KillTotali: totals.perPlayer[player.id] || 0
+          KillClassifica: totals.perPlayer[player.id] || 0,
+          KillTotaliGiocati: totals.rawPerPlayer[player.id] || 0
         });
       }
     }
-    rows.sort((a, b) => b.KillTotali - a.KillTotali || a.Giocatore.localeCompare(b.Giocatore));
+    rows.sort((a, b) => b.KillClassifica - a.KillClassifica || b.KillTotaliGiocati - a.KillTotaliGiocati || a.Giocatore.localeCompare(b.Giocatore));
     let currentRank = 0;
     let seen = 0;
     let lastKills = null;
     for (const row of rows) {
       seen += 1;
-      if (lastKills === null || row.KillTotali !== lastKills) {
+      if (lastKills === null || row.KillClassifica !== lastKills) {
         currentRank = seen;
-        lastKills = row.KillTotali;
+        lastKills = row.KillClassifica;
       }
       row.Posizione = currentRank;
     }
@@ -568,53 +657,33 @@ function exportJson() {
     Posizione: p.Posizione,
     Nome: p.Giocatore,
     Squadra: p.Squadra,
-    KillTotali: p.KillTotali
+    KillClassifica: p.KillClassifica
   }));
 
   const eventRows = [
-    {
-      Sezione: "Evento",
-      Campo: "Titolo evento",
-      Valore: eventTitle
-    },
-    {
-      Sezione: "Evento",
-      Campo: "Data export",
-      Valore: new Date().toLocaleString()
-    },
-    {
-      Sezione: "Top 3 Squadre",
-      Campo: "1° posto",
-      Valore: winner ? winner.name : "",
-      Punti: winner ? winner.stats.totalPoints : "",
-      Kill: winner ? winner.stats.totalKills : ""
-    },
-    {
-      Sezione: "Top 3 Squadre",
-      Campo: "2° posto",
-      Valore: second ? second.name : "",
-      Punti: second ? second.stats.totalPoints : "",
-      Kill: second ? second.stats.totalKills : ""
-    },
-    {
-      Sezione: "Top 3 Squadre",
-      Campo: "3° posto",
-      Valore: third ? third.name : "",
-      Punti: third ? third.stats.totalPoints : "",
-      Kill: third ? third.stats.totalKills : ""
-    },
+    { Sezione: "Evento", Campo: "Titolo evento", Valore: eventTitle },
+    { Sezione: "Evento", Campo: "Data export", Valore: new Date().toLocaleString() },
+    { Sezione: "Evento", Campo: "Best Of attivo", Valore: cfg.enabled ? "Si" : "No" },
+    { Sezione: "Evento", Campo: "Round contati", Valore: cfg.enabled ? cfg.roundsToCount : globalRounds.length },
+    { Sezione: "Top 3 Squadre", Campo: "1° posto", Valore: winner ? winner.name : "", PuntiClassifica: winner ? winner.stats.totalPoints : "", KillClassifica: winner ? winner.stats.totalKills : "" },
+    { Sezione: "Top 3 Squadre", Campo: "2° posto", Valore: second ? second.name : "", PuntiClassifica: second ? second.stats.totalPoints : "", KillClassifica: second ? second.stats.totalKills : "" },
+    { Sezione: "Top 3 Squadre", Campo: "3° posto", Valore: third ? third.name : "", PuntiClassifica: third ? third.stats.totalPoints : "", KillClassifica: third ? third.stats.totalKills : "" },
     ...top5Players
   ];
 
   const teamRows = ranked.map((team, index) => {
+    const totals = teamTotals(team);
     const row = {
       Posizione: index + 1,
       Squadra: team.name,
-      PuntiTotali: team.stats.totalPoints,
-      KillTotali: team.stats.totalKills
+      PuntiClassifica: totals.totalPoints,
+      KillClassifica: totals.totalKills,
+      PuntiTotaliGiocati: totals.rawTotalPoints,
+      KillTotaliGiocati: totals.rawTotalKills
     };
     for (const roundMeta of globalRounds) {
       const round = team.rounds[roundMeta.id];
+      row[roundMeta.name + " Conteggiato"] = round?.isCounted ? "Si" : "No";
       row[roundMeta.name + " Posizione"] = round?.placement || "";
       row[roundMeta.name + " Kill"] = round?.totalKills || 0;
       row[roundMeta.name + " Punti"] = round?.points || 0;
@@ -631,6 +700,7 @@ function exportJson() {
         Evento: eventTitle,
         Squadra: team.name,
         Round: roundMeta.name,
+        Conteggiato: round.isCounted ? "Si" : "No",
         Posizione: round.placement || "",
         KillRound: round.totalKills || 0,
         BonusPosizione: placementBonus(round.placement),
@@ -649,7 +719,8 @@ function exportJson() {
         Evento: eventTitle,
         Squadra: team.name,
         Giocatore: player.name,
-        KillTotali: totals.perPlayer[player.id] || 0
+        KillClassifica: totals.perPlayer[player.id] || 0,
+        KillTotaliGiocati: totals.rawPerPlayer[player.id] || 0
       };
       for (const roundMeta of globalRounds) {
         row[roundMeta.name] = Number(team.rounds[roundMeta.id]?.killsByPlayer?.[player.id] || 0);
@@ -715,7 +786,7 @@ function renderTeams() {
               </div>
               <div class="subtle">
                 <strong>${totals.totalPoints} punti totali</strong><br />
-                <span class="muted">${totals.totalKills} kill totali</span>
+                <span class="muted">${totals.totalKills} kill classifica</span>${getBestOfConfig().enabled ? `<br /><span class="mini muted">${totals.rawTotalKills} kill totali giocati</span>` : ""}
               </div>
             </div>
 
@@ -745,7 +816,7 @@ function renderTeams() {
           <div class="row" style="margin-bottom: 12px;">
             <div>
               <label>Posizione</label><div class="mini" style="color:red;" id="placement-error-${team.id}-${roundMeta.id}"></div>
-              <input type="number" min="1" value="${escapeHtml(round.placement)}" style="${round.placementError ? 'border:2px solid red' : ''}" onchange="updateRoundPlacement('${team.id}','${roundMeta.id}', this.value)" />
+              <input type="number" min="1" value="${escapeHtml(round.placement)}" style="${round.placementError ? 'border:2px solid red' : ''}" oninput="updateRoundPlacement('${team.id}','${roundMeta.id}', this.value)" />
             </div>
             <div>
               <label>Kill totali round</label>
@@ -761,7 +832,7 @@ function renderTeams() {
             </div>
             <div>
               <label>Stato</label>
-              <div class="subtle mini">${escapeHtml(round.status || "Pronto")}</div>
+              <div class="subtle mini">${escapeHtml(round.status || "Pronto")}${getBestOfConfig().enabled ? `<br /><span class="mini muted">${round.isCounted ? "Round conteggiato" : "Round escluso"}</span>` : ""}</div>
             </div>
           </div>
 
@@ -799,7 +870,7 @@ function renderSidebar() {
   document.getElementById("leaderboard").innerHTML = list.map((team, i) => `
     <div class="rank-item">
       <strong>${i + 1}. ${escapeHtml(team.name)}</strong><br />
-      <span class="muted">${team.stats.totalKills} kill totali</span><br />
+      <span class="muted">${team.stats.totalKills} kill classifica</span>${getBestOfConfig().enabled ? `<br /><span class="mini muted">${team.stats.rawTotalKills} kill totali giocati</span>` : ""}<br />
       <strong>${team.stats.totalPoints} punti</strong>
     </div>
   `).join("") || '<div class="muted">Nessuna squadra inserita.</div>';
@@ -807,8 +878,8 @@ function renderSidebar() {
   const winner = list[0];
   document.getElementById("winner").innerHTML = winner ? `
     <strong>${escapeHtml(winner.name)}</strong><br />
-    <span class="muted">${winner.stats.totalPoints} punti totali</span><br />
-    <span class="muted">${winner.stats.totalKills} kill totali</span>
+    <span class="muted">${winner.stats.totalPoints} punti classifica</span><br />
+    <span class="muted">${winner.stats.totalKills} kill classifica</span>${getBestOfConfig().enabled ? `<br /><span class="mini muted">${winner.stats.rawTotalKills} kill totali giocati</span>` : ""}
   ` : '<div class="muted">Nessuna squadra inserita.</div>';
 
   const topPlayers = rankedPlayers();
@@ -816,12 +887,13 @@ function renderSidebar() {
     <div class="rank-item">
       <strong>${p.rank}. ${escapeHtml(p.playerName)}</strong><br />
       <span class="muted">${escapeHtml(p.teamName)}</span><br />
-      <strong>${p.kills} kill</strong>
+      <strong>${p.kills} kill classifica</strong>${getBestOfConfig().enabled ? `<br /><span class="mini muted">${p.rawKills} kill totali giocati</span>` : ""}
     </div>
   `).join("") : '<div class="muted">Nessun giocatore disponibile.</div>';
 }
 
 function render() {
+  if (activeRoundId) validateRoundPlacements(activeRoundId);
   renderGlobalRoundTabs();
   renderTeams();
   renderSidebar();
@@ -843,6 +915,8 @@ function resetAll() {
   document.getElementById("secondBonus").value = 10;
   document.getElementById("thirdBonus").value = 7;
   document.getElementById("fourthFifthBonus").value = 3;
+  document.getElementById("bestOfEnabled").checked = false;
+  document.getElementById("bestOfCount").value = 3;
   const titleInput = document.getElementById("eventTitle");
   if (titleInput) {
     if (!titleInput.value) titleInput.value = "Tool Seals Torneo";
@@ -862,6 +936,8 @@ document.getElementById("firstBonus").addEventListener("input", render);
 document.getElementById("secondBonus").addEventListener("input", render);
 document.getElementById("thirdBonus").addEventListener("input", render);
 document.getElementById("fourthFifthBonus").addEventListener("input", render);
+document.getElementById("bestOfEnabled").addEventListener("change", render);
+document.getElementById("bestOfCount").addEventListener("input", render);
 
 resetAll();
 </script>
