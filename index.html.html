@@ -1,0 +1,869 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tool Seals Torneo</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fb; color: #1f2937; }
+    .wrap { max-width: 1760px; margin: 0 auto; padding: 12px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(320px, 0.9fr); gap: 16px; }
+    .card { background: white; border-radius: 16px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 14px; }
+    .team-card { border: 4px solid #3b44d1; }
+    h1, h2, h3, h4 { margin: 0 0 8px 0; line-height: 1.2; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 16px; }
+    h4 { font-size: 13px; }
+    label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: 600; }
+    input, textarea, button { font: inherit; }
+    input[type="text"], input[type="number"], textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 10px; box-sizing: border-box; background: white;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .row2 { display: grid; grid-template-columns: 1fr 120px 44px; gap: 8px; margin-bottom: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .btn { background: #111827; color: white; border: none; border-radius: 12px; padding: 8px 12px; cursor: pointer; }
+    .btn.secondary { background: white; color: #111827; border: 1px solid #d1d5db; }
+    .btn.danger { background: #b91c1c; }
+    .btn.small { padding: 8px 10px; border-radius: 10px; }
+    .muted { color: #6b7280; font-size: 14px; }
+    .pill { display: inline-block; background: #eef2ff; color: #3730a3; padding: 6px 10px; border-radius: 999px; font-size: 13px; }
+    .subtle { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; }
+    .dropzone {
+      border: 2px dashed #cbd5e1; border-radius: 14px; padding: 12px; background: #fff;
+      text-align: center; transition: 0.2s; cursor: pointer;
+    }
+    .dropzone.dragover { border-color: #0ea5e9; background: #f0f9ff; }
+    .hint { font-size: 12px; color: #64748b; }
+    .mini { font-size: 12px; }
+    .rank-item { border: 1px solid #e5e7eb; border-radius: 14px; padding: 10px; margin-bottom: 8px; }
+    .warn { background: #fff7ed; border: 1px solid #fdba74; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 18px 0; }
+    .tab {
+      border: 1px solid #cbd5e1; background: white; color: #0f172a; border-radius: 999px;
+      padding: 6px 12px; cursor: pointer; font-size: 14px;
+    }
+    .tab.active { background: #111827; color: white; border-color: #111827; }
+    .team-head { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .section-space { margin-top: 18px; }
+    @media (max-width: 1200px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      .wrap { padding: 10px; }
+      .row { grid-template-columns: repeat(2, 1fr); }
+      .row3 { grid-template-columns: 1fr; }
+      .row2 { grid-template-columns: 1fr 90px 40px; }
+      h1 { font-size: 22px; }
+      h2 { font-size: 18px; }
+      .tabs { gap: 6px; }
+      .tab { padding: 6px 10px; font-size: 12px; }
+    }
+    @media (max-width: 600px) {
+      .row { grid-template-columns: 1fr; }
+      .row2 { grid-template-columns: 1fr 80px 36px; }
+      .actions { flex-direction: column; align-items: stretch; }
+      .team-head { flex-direction: column; }
+      .dropzone { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div style="margin-bottom:12px;">
+      <label for="eventTitle">Titolo evento</label>
+      <input id="eventTitle" type="text" value="Tool Seals Torneo" style="max-width:520px;" />
+    </div>
+    <h1 id="pageTitle">Tool Seals Torneo</h1>
+    <p class="muted">Interfaccia ottimizzata per inserire i risultati per round. Ogni round è globale per tutte le squadre. Classifica squadre e Top 5 giocatori visibili a destra.</p>
+
+    <div class="grid">
+      <div>
+        <div class="card team-card">
+          <h2>Regole punti</h2>
+          <div class="row">
+            <div>
+              <label>Punti per kill</label>
+              <input id="killPoints" type="number" value="1" />
+            </div>
+            <div>
+              <label>1° posto</label>
+              <input id="firstBonus" type="number" value="15" />
+            </div>
+            <div>
+              <label>2° posto</label>
+              <input id="secondBonus" type="number" value="10" />
+            </div>
+            <div>
+              <label>3° posto</label>
+              <input id="thirdBonus" type="number" value="7" />
+            </div>
+            <div>
+              <label>4° e 5° posto</label>
+              <input id="fourthFifthBonus" type="number" value="3" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card team-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div>
+              <h2>Gestione round</h2>
+              <div class="muted">Il round selezionato è visibile in tutte le squadre.</div>
+            </div>
+            <div class="actions" style="margin:0;">
+              <button class="btn" onclick="addGlobalRound()">+ Nuovo round per tutte le squadre</button>
+              <button class="btn secondary" onclick="renameActiveRound()">Rinomina round attivo</button>
+              <button class="btn danger" onclick="deleteActiveRound()">Elimina round attivo</button>
+            </div>
+          </div>
+          <div id="globalRoundTabs" class="tabs"></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" onclick="addTeam()">Aggiungi squadra</button>
+          <button class="btn secondary" onclick="exportJson()">Esporta risultati</button>
+          <button class="btn secondary" onclick="safeResetAll()">Reimposta</button>
+        </div>
+
+        <div id="teams"></div>
+      </div>
+
+      <div>
+        <div class="card team-card">
+          <h2>Classifica squadre</h2>
+          <div id="leaderboard"></div>
+        </div>
+
+        <div class="card team-card">
+          <h2>Squadra vincitrice</h2>
+          <div id="winner"></div>
+        </div>
+
+        <div class="card team-card">
+          <h2>Top 5 giocatori per kill</h2>
+          <div id="topPlayers"></div>
+        </div>
+
+        <div class="card warn">
+          <h3>Passo attuale</h3>
+          <div class="muted">Ora il focus è sulla struttura e sulla facilità d'uso. Il perfezionamento OCR delle kill viene dopo.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+let teams = [];
+let globalRounds = [];
+let activeRoundId = null;
+let nextPlayerNumber = 1;
+const TEAM_BASE_NAMES = ["Alpha","Beta","Gamma","Delta","Epsilon","Zeta","Eta","Theta","Iota","Kappa","Lambda","Mu","Nu","Xi","Omicron","Pi","Rho","Sigma","Tau","Upsilon","Phi","Chi","Psi","Omega"];
+
+function uid() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+
+function getNextTeamName() {
+  const used = new Set(teams.map(t => t.name));
+  for (const base of TEAM_BASE_NAMES) {
+    const candidate = "Squadra " + base;
+    if (!used.has(candidate)) return candidate;
+  }
+  return "Squadra " + (teams.length + 1);
+}
+
+function getNextPlayerDefaultName() {
+  while (true) {
+    const candidate = "Giocatore " + nextPlayerNumber;
+    nextPlayerNumber += 1;
+    const exists = teams.some(t => t.players.some(p => p.name === candidate));
+    if (!exists) return candidate;
+  }
+}
+
+function createPlayer(name = "") {
+  return { id: uid(), name };
+}
+
+function createRoundMeta(index) {
+  return { id: uid(), name: "Round " + index };
+}
+
+function createRoundData(roundId) {
+  return {
+    roundId,
+    placement: "",
+    killsByPlayer: {},
+    scoreImageName: "",
+    placeImageName: "",
+    scoreOcrText: "",
+    placeOcrText: "",
+    scoreConfidence: 0,
+    placeConfidence: 0,
+    status: "",
+    points: 0,
+    totalKills: 0
+  };
+}
+
+function createTeam(name = "Squadra") {
+  const players = [createPlayer(getNextPlayerDefaultName()), createPlayer(getNextPlayerDefaultName()), createPlayer(getNextPlayerDefaultName())];
+  const rounds = {};
+  for (const round of globalRounds) {
+    rounds[round.id] = createRoundData(round.id);
+    for (const p of players) rounds[round.id].killsByPlayer[p.id] = 0;
+  }
+  return { id: uid(), name, players, rounds };
+}
+
+function rules() {
+  return {
+    killPoints: Number(document.getElementById("killPoints").value) || 0,
+    firstBonus: Number(document.getElementById("firstBonus").value) || 0,
+    secondBonus: Number(document.getElementById("secondBonus").value) || 0,
+    thirdBonus: Number(document.getElementById("thirdBonus").value) || 0,
+    fourthFifthBonus: Number(document.getElementById("fourthFifthBonus").value) || 0
+  };
+}
+
+function placementBonus(placement) {
+  const r = rules();
+  placement = Number(placement) || 0;
+  if (placement === 1) return r.firstBonus;
+  if (placement === 2) return r.secondBonus;
+  if (placement === 3) return r.thirdBonus;
+  if (placement === 4 || placement === 5) return r.fourthFifthBonus;
+  return 0;
+}
+
+function escapeHtml(s) {
+  return String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+}
+
+function findTeam(teamId) { return teams.find(t => t.id === teamId); }
+function findRoundMeta(roundId) { return globalRounds.find(r => r.id === roundId); }
+function getActiveRoundMeta() { return findRoundMeta(activeRoundId); }
+function getRoundData(team, roundId) { return team?.rounds?.[roundId]; }
+
+function teamTotals(team) {
+  let totalKills = 0;
+  let totalPoints = 0;
+  const perPlayer = {};
+  for (const p of team.players) perPlayer[p.id] = 0;
+
+  for (const roundMeta of globalRounds) {
+    const round = team.rounds[roundMeta.id];
+    if (!round) continue;
+    const rKills = Object.values(round.killsByPlayer || {}).reduce((s, n) => s + (Number(n) || 0), 0);
+    const rPoints = rKills * rules().killPoints + placementBonus(round.placement);
+    round.totalKills = rKills;
+    round.points = rPoints;
+    totalKills += rKills;
+    totalPoints += rPoints;
+    for (const p of team.players) perPlayer[p.id] += Number(round.killsByPlayer[p.id] || 0);
+  }
+
+  return { totalKills, totalPoints, perPlayer };
+}
+
+function rankedTeams() {
+  return [...teams]
+    .map(team => ({ ...team, stats: teamTotals(team) }))
+    .sort((a, b) => b.stats.totalPoints - a.stats.totalPoints || b.stats.totalKills - a.stats.totalKills || a.name.localeCompare(b.name));
+}
+
+function rankedPlayers() {
+  const rows = [];
+  for (const team of teams) {
+    const totals = teamTotals(team);
+    for (const player of team.players) {
+      rows.push({
+        teamName: team.name,
+        playerName: player.name,
+        kills: totals.perPlayer[player.id] || 0
+      });
+    }
+  }
+  const sorted = rows.sort((a, b) => b.kills - a.kills || a.playerName.localeCompare(b.playerName));
+  let currentRank = 0;
+  let lastKills = null;
+  let seen = 0;
+  for (const row of sorted) {
+    seen += 1;
+    if (lastKills === null || row.kills !== lastKills) {
+      currentRank = seen;
+      lastKills = row.kills;
+    }
+    row.rank = currentRank;
+  }
+  return sorted.slice(0, 5);
+}
+
+
+function deleteActiveRound() {
+  const round = getActiveRoundMeta();
+  if (!round) return;
+  if (globalRounds.length <= 1) {
+    alert("Il primo round non può essere eliminato.");
+    return;
+  }
+  const index = globalRounds.findIndex(r => r.id === round.id);
+  if (index === 0) {
+    alert("Il primo round non può essere eliminato.");
+    return;
+  }
+  if (!confirm("Sei sicuro di voler eliminare questo round?")) return;
+
+  globalRounds = globalRounds.filter(r => r.id !== round.id);
+  for (const team of teams) {
+    delete team.rounds[round.id];
+  }
+  activeRoundId = globalRounds[Math.max(0, index - 1)].id;
+  render();
+}
+
+function safeResetAll() {
+  if (!confirm("Sei sicuro di voler resettare tutto?")) return;
+  resetAll();
+}
+
+function isPlacementUnique(teamId, roundId, placement) {
+  const target = Number(placement) || 0;
+  if (!target) return true;
+  for (const team of teams) {
+    if (team.id === teamId) continue;
+    const round = team.rounds?.[roundId];
+    if (Number(round?.placement) === target) return false;
+  }
+  return true;
+}
+
+function addGlobalRound() {
+  const round = createRoundMeta(globalRounds.length + 1);
+  globalRounds.push(round);
+  activeRoundId = round.id;
+
+  for (const team of teams) {
+    team.rounds[round.id] = createRoundData(round.id);
+    for (const p of team.players) team.rounds[round.id].killsByPlayer[p.id] = 0;
+  }
+  render();
+}
+
+function renameActiveRound() {
+  const round = getActiveRoundMeta();
+  if (!round) return;
+  const value = prompt("Nuovo nome del round", round.name);
+  if (!value) return;
+  round.name = value;
+  render();
+}
+
+function selectRound(roundId) {
+  activeRoundId = roundId;
+  render();
+}
+
+function addTeam() {
+  teams.push(createTeam(getNextTeamName()));
+  render();
+}
+
+function removeTeam(teamId) {
+  teams = teams.filter(t => t.id !== teamId);
+  render();
+}
+
+function updateTeamName(teamId, value) {
+  const team = findTeam(teamId);
+  if (!team) return;
+  team.name = value;
+  render();
+}
+
+function addPlayer(teamId) {
+  const team = findTeam(teamId);
+  if (!team) return;
+  const player = createPlayer(getNextPlayerDefaultName());
+  team.players.push(player);
+  for (const round of globalRounds) {
+    team.rounds[round.id].killsByPlayer[player.id] = 0;
+  }
+  render();
+}
+
+function removePlayer(teamId, playerId) {
+  const team = findTeam(teamId);
+  if (!team) return;
+  team.players = team.players.filter(p => p.id !== playerId);
+  for (const round of globalRounds) {
+    delete team.rounds[round.id].killsByPlayer[playerId];
+  }
+  render();
+}
+
+function updatePlayerName(teamId, playerId, value) {
+  const team = findTeam(teamId);
+  const player = team?.players.find(p => p.id === playerId);
+  if (!player) return;
+  player.name = value;
+  render();
+}
+
+function updateRoundPlacement(teamId, roundId, value) {
+  const team = findTeam(teamId);
+  const round = getRoundData(team, roundId);
+  if (!round) return;
+
+  const nextValue = Number(value) || "";
+  round.placement = nextValue;
+
+  // mark conflict instead of blocking
+  round.placementError = false;
+  if (nextValue && !isPlacementUnique(teamId, roundId, nextValue)) {
+    round.placementError = true;
+  }
+
+  render();
+}
+
+function updateRoundPlayerKills(teamId, roundId, playerId, value) {
+  const team = findTeam(teamId);
+  const round = getRoundData(team, roundId);
+  if (!round) return;
+  round.killsByPlayer[playerId] = Number(value) || 0;
+  render();
+}
+
+function triggerFile(id) {
+  const el = document.getElementById(id);
+  if (el) el.click();
+}
+
+function setupDropzones() {
+  document.querySelectorAll(".dropzone").forEach(zone => {
+    if (zone.dataset.ready === "1") return;
+    zone.dataset.ready = "1";
+
+    zone.addEventListener("dragover", e => {
+      e.preventDefault();
+      zone.classList.add("dragover");
+    });
+    zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+    zone.addEventListener("drop", e => {
+      e.preventDefault();
+      zone.classList.remove("dragover");
+      const files = e.dataTransfer?.files;
+      if (!files || !files.length) return;
+      handleZoneFile(zone.id, files[0]);
+    });
+    zone.addEventListener("paste", e => {
+      const items = e.clipboardData?.items || [];
+      for (const item of items) {
+        if (item.type && item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) handleZoneFile(zone.id, file);
+          e.preventDefault();
+          break;
+        }
+      }
+    });
+    zone.tabIndex = 0;
+  });
+}
+
+function handleZoneFile(zoneId, file) {
+  const parts = zoneId.split("-");
+  const mode = parts[0];
+  const teamId = parts[2];
+  const roundId = parts.slice(3).join("-");
+  if (mode === "score") handleScoreUpload(teamId, roundId, file);
+  if (mode === "place") handlePlaceUpload(teamId, roundId, file);
+}
+
+function handleScoreUpload(teamId, roundId, file) {
+  const team = findTeam(teamId);
+  const round = getRoundData(team, roundId);
+  if (!round || !file) return;
+  round.scoreImageName = file.name || "immagine";
+  round.status = "Immagine risultati caricata";
+  render();
+}
+
+function handlePlaceUpload(teamId, roundId, file) {
+  const team = findTeam(teamId);
+  const round = getRoundData(team, roundId);
+  if (!round || !file) return;
+  round.placeImageName = file.name || "immagine";
+  round.status = "Immagine posizione caricata";
+  render();
+}
+
+
+
+
+function autoFitColumnsFromRows(rows) {
+  if (!rows || !rows.length) return [];
+  const headers = Object.keys(rows[0]);
+  return headers.map((header) => {
+    let maxLen = String(header).length;
+    for (const row of rows) {
+      const value = row[header] == null ? "" : String(row[header]);
+      const longestLine = value.split("\n").reduce((m, part) => Math.max(m, part.length), 0);
+      if (longestLine > maxLen) maxLen = longestLine;
+    }
+    return { wch: Math.min(Math.max(maxLen + 2, 12), 40) };
+  });
+}
+
+function applySheetLayout(ws, rows) {
+  ws["!cols"] = autoFitColumnsFromRows(rows);
+}
+
+function exportJson() {
+  const eventTitle = document.getElementById("eventTitle")?.value?.trim() || "Tool Seals Torneo";
+  const ranked = rankedTeams();
+  const winner = ranked[0] || null;
+  const second = ranked[1] || null;
+  const third = ranked[2] || null;
+
+  const playerRankingRows = (() => {
+    const rows = [];
+    for (const team of teams) {
+      const totals = teamTotals(team);
+      for (const player of team.players) {
+        rows.push({
+          Squadra: team.name,
+          Giocatore: player.name,
+          KillTotali: totals.perPlayer[player.id] || 0
+        });
+      }
+    }
+    rows.sort((a, b) => b.KillTotali - a.KillTotali || a.Giocatore.localeCompare(b.Giocatore));
+    let currentRank = 0;
+    let seen = 0;
+    let lastKills = null;
+    for (const row of rows) {
+      seen += 1;
+      if (lastKills === null || row.KillTotali !== lastKills) {
+        currentRank = seen;
+        lastKills = row.KillTotali;
+      }
+      row.Posizione = currentRank;
+    }
+    return rows;
+  })();
+
+  const top5Players = playerRankingRows.slice(0, 5).map((p) => ({
+    Sezione: "Top 5 Giocatori",
+    Posizione: p.Posizione,
+    Nome: p.Giocatore,
+    Squadra: p.Squadra,
+    KillTotali: p.KillTotali
+  }));
+
+  const eventRows = [
+    {
+      Sezione: "Evento",
+      Campo: "Titolo evento",
+      Valore: eventTitle
+    },
+    {
+      Sezione: "Evento",
+      Campo: "Data export",
+      Valore: new Date().toLocaleString()
+    },
+    {
+      Sezione: "Top 3 Squadre",
+      Campo: "1° posto",
+      Valore: winner ? winner.name : "",
+      Punti: winner ? winner.stats.totalPoints : "",
+      Kill: winner ? winner.stats.totalKills : ""
+    },
+    {
+      Sezione: "Top 3 Squadre",
+      Campo: "2° posto",
+      Valore: second ? second.name : "",
+      Punti: second ? second.stats.totalPoints : "",
+      Kill: second ? second.stats.totalKills : ""
+    },
+    {
+      Sezione: "Top 3 Squadre",
+      Campo: "3° posto",
+      Valore: third ? third.name : "",
+      Punti: third ? third.stats.totalPoints : "",
+      Kill: third ? third.stats.totalKills : ""
+    },
+    ...top5Players
+  ];
+
+  const teamRows = ranked.map((team, index) => {
+    const row = {
+      Posizione: index + 1,
+      Squadra: team.name,
+      PuntiTotali: team.stats.totalPoints,
+      KillTotali: team.stats.totalKills
+    };
+    for (const roundMeta of globalRounds) {
+      const round = team.rounds[roundMeta.id];
+      row[roundMeta.name + " Posizione"] = round?.placement || "";
+      row[roundMeta.name + " Kill"] = round?.totalKills || 0;
+      row[roundMeta.name + " Punti"] = round?.points || 0;
+    }
+    return row;
+  });
+
+  const roundRows = [];
+  for (const team of teams) {
+    for (const roundMeta of globalRounds) {
+      const round = team.rounds[roundMeta.id];
+      if (!round) continue;
+      roundRows.push({
+        Evento: eventTitle,
+        Squadra: team.name,
+        Round: roundMeta.name,
+        Posizione: round.placement || "",
+        KillRound: round.totalKills || 0,
+        BonusPosizione: placementBonus(round.placement),
+        PuntiRound: round.points || 0,
+        ImmagineRisultati: round.scoreImageName || "",
+        ImmaginePosizione: round.placeImageName || ""
+      });
+    }
+  }
+
+  const playerRows = [];
+  for (const team of teams) {
+    const totals = teamTotals(team);
+    for (const player of team.players) {
+      const row = {
+        Evento: eventTitle,
+        Squadra: team.name,
+        Giocatore: player.name,
+        KillTotali: totals.perPlayer[player.id] || 0
+      };
+      for (const roundMeta of globalRounds) {
+        row[roundMeta.name] = Number(team.rounds[roundMeta.id]?.killsByPlayer?.[player.id] || 0);
+      }
+      playerRows.push(row);
+    }
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  const wsEvent = XLSX.utils.json_to_sheet(eventRows);
+  const wsTeams = XLSX.utils.json_to_sheet(teamRows);
+  const wsPlayerRanking = XLSX.utils.json_to_sheet(playerRankingRows);
+  const wsRounds = XLSX.utils.json_to_sheet(roundRows);
+  const wsPlayers = XLSX.utils.json_to_sheet(playerRows);
+
+  applySheetLayout(wsEvent, eventRows);
+  applySheetLayout(wsTeams, teamRows);
+  applySheetLayout(wsPlayerRanking, playerRankingRows);
+  applySheetLayout(wsRounds, roundRows);
+  applySheetLayout(wsPlayers, playerRows);
+
+  XLSX.utils.book_append_sheet(wb, wsEvent, "Evento");
+  XLSX.utils.book_append_sheet(wb, wsTeams, "Classifica Squadre");
+  XLSX.utils.book_append_sheet(wb, wsPlayerRanking, "Classifica Giocatori");
+  XLSX.utils.book_append_sheet(wb, wsRounds, "Round");
+  XLSX.utils.book_append_sheet(wb, wsPlayers, "Giocatori");
+
+  const safeName = eventTitle.replace(/[\\/:*?"<>|]+/g, "_").trim() || "seals_torneo_export";
+  XLSX.writeFile(wb, safeName + ".xlsx");
+}
+
+function renderGlobalRoundTabs() {
+  const el = document.getElementById("globalRoundTabs");
+  el.innerHTML = globalRounds.map(round => `
+    <button class="tab ${round.id === activeRoundId ? "active" : ""}" onclick="selectRound('${round.id}')">
+      ${escapeHtml(round.name)}
+    </button>
+  `).join("");
+}
+
+function renderTeams() {
+  const roundMeta = getActiveRoundMeta();
+  const teamsEl = document.getElementById("teams");
+
+  if (!roundMeta) {
+    teamsEl.innerHTML = '<div class="card"><div class="muted">Nessun round disponibile.</div></div>';
+    return;
+  }
+
+  teamsEl.innerHTML = teams.map(team => {
+    const totals = teamTotals(team);
+    const round = getRoundData(team, roundMeta.id);
+
+    return `
+      <div class="card team-card">
+        <div class="team-head">
+          <div style="flex:1">
+            <div class="row3" style="margin-bottom: 12px;">
+              <div>
+                <label>Nome squadra</label>
+                <input type="text" value="${escapeHtml(team.name)}" onchange="updateTeamName('${team.id}', this.value)" />
+              </div>
+              <div class="subtle">
+                <strong>${totals.totalPoints} punti totali</strong><br />
+                <span class="muted">${totals.totalKills} kill totali</span>
+              </div>
+            </div>
+
+            <h3>Giocatori</h3>
+            <div class="row2" style="margin-bottom:8px;">
+              <div class="mini muted"><strong>Nome giocatore</strong></div>
+              <div class="mini muted"><strong>Kill round attivo</strong></div>
+              <div></div>
+            </div>
+            ${team.players.map(player => `
+              <div class="row2">
+                <input type="text" value="${escapeHtml(player.name)}" onchange="updatePlayerName('${team.id}','${player.id}', this.value)" />
+                <input type="number" min="0" value="${Number(round.killsByPlayer[player.id] || 0)}" onchange="updateRoundPlayerKills('${team.id}','${roundMeta.id}','${player.id}', this.value)" />
+                <button class="btn danger small" onclick="removePlayer('${team.id}','${player.id}')">X</button>
+              </div>
+            `).join("")}
+            <div style="margin-bottom: 8px;">
+              <button class="btn secondary small" onclick="addPlayer('${team.id}')">Aggiungi giocatore</button>
+            </div>
+          </div>
+          <button class="btn danger small" onclick="removeTeam('${team.id}')">Elimina squadra</button>
+        </div>
+
+        <div class="section-space">
+          <h3>${escapeHtml(roundMeta.name)}</h3>
+
+          <div class="row" style="margin-bottom: 12px;">
+            <div>
+              <label>Posizione</label><div class="mini" style="color:red;" id="placement-error-${team.id}-${roundMeta.id}"></div>
+              <input type="number" min="1" value="${escapeHtml(round.placement)}" style="${round.placementError ? 'border:2px solid red' : ''}" onchange="updateRoundPlacement('${team.id}','${roundMeta.id}', this.value)" />
+            </div>
+            <div>
+              <label>Kill totali round</label>
+              <div class="pill">${round.totalKills || 0}</div>
+            </div>
+            <div>
+              <label>Bonus posizione</label>
+              <div class="pill">${placementBonus(round.placement)}</div>
+            </div>
+            <div>
+              <label>Punti round</label>
+              <div class="pill">${round.points || 0}</div>
+            </div>
+            <div>
+              <label>Stato</label>
+              <div class="subtle mini">${escapeHtml(round.status || "Pronto")}</div>
+            </div>
+          </div>
+
+          <div class="row3" style="margin-top: 12px; margin-bottom: 12px;">
+            <div class="subtle">
+              <label>Immagine risultati squadra</label>
+              <div id="score-drop-${team.id}-${roundMeta.id}" class="dropzone" onclick="triggerFile('score-file-${team.id}-${roundMeta.id}')">
+                Clicca, trascina qui o incolla l'immagine risultati
+                <div class="hint">Per la fase successiva OCR</div>
+              </div>
+              <input id="score-file-${team.id}-${roundMeta.id}" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleScoreUpload('${team.id}','${roundMeta.id}', this.files[0])" />
+              <div class="muted">${escapeHtml(round.scoreImageName || "Nessuna immagine caricata")}</div>
+            </div>
+
+            <div class="subtle">
+              <label>Immagine posizione finale</label>
+              <div id="place-drop-${team.id}-${roundMeta.id}" class="dropzone" onclick="triggerFile('place-file-${team.id}-${roundMeta.id}')">
+                Clicca, trascina qui o incolla l'immagine posizione
+                <div class="hint">Per la fase successiva OCR</div>
+              </div>
+              <input id="place-file-${team.id}-${roundMeta.id}" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handlePlaceUpload('${team.id}','${roundMeta.id}', this.files[0])" />
+              <div class="muted">${escapeHtml(round.placeImageName || "Nessuna immagine caricata")}</div>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderSidebar() {
+  const list = rankedTeams();
+  document.getElementById("leaderboard").innerHTML = list.map((team, i) => `
+    <div class="rank-item">
+      <strong>${i + 1}. ${escapeHtml(team.name)}</strong><br />
+      <span class="muted">${team.stats.totalKills} kill totali</span><br />
+      <strong>${team.stats.totalPoints} punti</strong>
+    </div>
+  `).join("") || '<div class="muted">Nessuna squadra inserita.</div>';
+
+  const winner = list[0];
+  document.getElementById("winner").innerHTML = winner ? `
+    <strong>${escapeHtml(winner.name)}</strong><br />
+    <span class="muted">${winner.stats.totalPoints} punti totali</span><br />
+    <span class="muted">${winner.stats.totalKills} kill totali</span>
+  ` : '<div class="muted">Nessuna squadra inserita.</div>';
+
+  const topPlayers = rankedPlayers();
+  document.getElementById("topPlayers").innerHTML = topPlayers.length ? topPlayers.map((p) => `
+    <div class="rank-item">
+      <strong>${p.rank}. ${escapeHtml(p.playerName)}</strong><br />
+      <span class="muted">${escapeHtml(p.teamName)}</span><br />
+      <strong>${p.kills} kill</strong>
+    </div>
+  `).join("") : '<div class="muted">Nessun giocatore disponibile.</div>';
+}
+
+function render() {
+  renderGlobalRoundTabs();
+  renderTeams();
+  renderSidebar();
+  setupDropzones();
+}
+
+function resetAll() {
+  globalRounds = [createRoundMeta(1)];
+  activeRoundId = globalRounds[0].id;
+  nextPlayerNumber = 1;
+  teams = [
+    createTeam("Squadra Alpha"),
+    createTeam("Squadra Beta"),
+    createTeam("Squadra Gamma"),
+    createTeam("Squadra Delta")
+  ];
+  document.getElementById("killPoints").value = 1;
+  document.getElementById("firstBonus").value = 15;
+  document.getElementById("secondBonus").value = 10;
+  document.getElementById("thirdBonus").value = 7;
+  document.getElementById("fourthFifthBonus").value = 3;
+  const titleInput = document.getElementById("eventTitle");
+  if (titleInput) {
+    if (!titleInput.value) titleInput.value = "Tool Seals Torneo";
+    document.getElementById("pageTitle").textContent = titleInput.value || "Tool Seals Torneo";
+  }
+  render();
+}
+
+
+document.getElementById("eventTitle").addEventListener("input", e => {
+  const value = e.target.value || "Tool Seals Torneo";
+  document.getElementById("pageTitle").textContent = value;
+});
+
+document.getElementById("killPoints").addEventListener("input", render);
+document.getElementById("firstBonus").addEventListener("input", render);
+document.getElementById("secondBonus").addEventListener("input", render);
+document.getElementById("thirdBonus").addEventListener("input", render);
+document.getElementById("fourthFifthBonus").addEventListener("input", render);
+
+resetAll();
+</script>
+</body>
+</html>
