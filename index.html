@@ -146,6 +146,9 @@
         <div class="actions">
           <button class="btn" onclick="addTeam()">Aggiungi squadra</button>
           <button class="btn secondary" onclick="exportJson()">Esporta risultati</button>
+          <button class="btn secondary" onclick="saveTournament()">Salva torneo</button>
+          <button class="btn secondary" onclick="loadTournamentClick()">Carica torneo</button>
+          <input id="fileLoader" type="file" style="display:none;" accept=".json,application/json">
           <button class="btn secondary" onclick="safeResetAll()">Reimposta</button>
         </div>
 
@@ -892,12 +895,144 @@ function renderSidebar() {
   `).join("") : '<div class="muted">Nessun giocatore disponibile.</div>';
 }
 
+
+const STORAGE_KEY = "seals_torneo_save";
+
+function buildSaveData() {
+  return {
+    teams,
+    globalRounds,
+    activeRoundId,
+    nextPlayerNumber,
+    eventTitle: document.getElementById("eventTitle")?.value || "Tool Seals Torneo",
+    rules: {
+      killPoints: document.getElementById("killPoints")?.value || "1",
+      firstBonus: document.getElementById("firstBonus")?.value || "15",
+      secondBonus: document.getElementById("secondBonus")?.value || "10",
+      thirdBonus: document.getElementById("thirdBonus")?.value || "7",
+      fourthFifthBonus: document.getElementById("fourthFifthBonus")?.value || "3"
+    },
+    bestOf: {
+      enabled: !!document.getElementById("bestOfEnabled")?.checked,
+      count: document.getElementById("bestOfCount")?.value || "3"
+    }
+  };
+}
+
+function autoSave() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(buildSaveData()));
+  } catch (error) {
+    console.error("Autosave failed", error);
+  }
+}
+
+function applySavedData(data) {
+  if (!data || typeof data !== "object") return false;
+
+  teams = Array.isArray(data.teams) ? data.teams : [];
+  globalRounds = Array.isArray(data.globalRounds) ? data.globalRounds : [];
+  activeRoundId = data.activeRoundId || (globalRounds[0]?.id ?? null);
+  nextPlayerNumber = Number(data.nextPlayerNumber || 1);
+
+  if (document.getElementById("eventTitle")) {
+    document.getElementById("eventTitle").value = data.eventTitle || "Tool Seals Torneo";
+  }
+  if (document.getElementById("pageTitle")) {
+    document.getElementById("pageTitle").textContent = data.eventTitle || "Tool Seals Torneo";
+  }
+
+  const rulesData = data.rules || {};
+  if (document.getElementById("killPoints")) document.getElementById("killPoints").value = rulesData.killPoints ?? "1";
+  if (document.getElementById("firstBonus")) document.getElementById("firstBonus").value = rulesData.firstBonus ?? "15";
+  if (document.getElementById("secondBonus")) document.getElementById("secondBonus").value = rulesData.secondBonus ?? "10";
+  if (document.getElementById("thirdBonus")) document.getElementById("thirdBonus").value = rulesData.thirdBonus ?? "7";
+  if (document.getElementById("fourthFifthBonus")) document.getElementById("fourthFifthBonus").value = rulesData.fourthFifthBonus ?? "3";
+
+  const bestOfData = data.bestOf || {};
+  if (document.getElementById("bestOfEnabled")) document.getElementById("bestOfEnabled").checked = !!bestOfData.enabled;
+  if (document.getElementById("bestOfCount")) document.getElementById("bestOfCount").value = bestOfData.count ?? "3";
+
+  return true;
+}
+
+function loadAutoSave() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return false;
+    return applySavedData(JSON.parse(saved));
+  } catch (error) {
+    console.error("Load autosave failed", error);
+    return false;
+  }
+}
+
+async function saveTournament() {
+  try {
+    const data = JSON.stringify(buildSaveData(), null, 2);
+    const eventTitle = (document.getElementById("eventTitle")?.value || "torneo_backup").trim() || "torneo_backup";
+    const safeName = eventTitle.replace(/[\\/:*?"<>|]+/g, "_") + ".json";
+
+    if (window.showSaveFilePicker) {
+      const fileHandle = await window.showSaveFilePicker({
+        suggestedName: safeName,
+        types: [
+          {
+            description: "File JSON",
+            accept: { "application/json": [".json"] }
+          }
+        ]
+      });
+      const writable = await fileHandle.createWritable();
+      await writable.write(data);
+      await writable.close();
+      return;
+    }
+
+    const blob = new Blob([data], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = safeName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch (error) {
+    if (error?.name !== "AbortError") {
+      alert("Errore durante il salvataggio");
+    }
+  }
+}
+
+function loadTournamentClick() {
+  document.getElementById("fileLoader")?.click();
+}
+
+function handleTournamentFileLoad(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function() {
+    try {
+      const parsed = JSON.parse(String(reader.result || "{}"));
+      if (!applySavedData(parsed)) {
+        alert("File torneo non valido");
+        return;
+      }
+      autoSave();
+      render();
+    } catch (error) {
+      alert("Impossibile caricare il file torneo");
+    }
+  };
+  reader.readAsText(file, "utf-8");
+}
+
+
 function render() {
   if (activeRoundId) validateRoundPlacements(activeRoundId);
   renderGlobalRoundTabs();
   renderTeams();
   renderSidebar();
   setupDropzones();
+  autoSave();
 }
 
 function resetAll() {
@@ -939,7 +1074,17 @@ document.getElementById("fourthFifthBonus").addEventListener("input", render);
 document.getElementById("bestOfEnabled").addEventListener("change", render);
 document.getElementById("bestOfCount").addEventListener("input", render);
 
-resetAll();
+document.getElementById("fileLoader").addEventListener("change", function(e) {
+  const file = e.target.files?.[0];
+  handleTournamentFileLoad(file);
+  e.target.value = "";
+});
+
+if (!loadAutoSave()) {
+  resetAll();
+} else {
+  render();
+}
 </script>
 </body>
 </html>
