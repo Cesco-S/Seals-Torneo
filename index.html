@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/fboni/Downloads/index_8.html -->
-<html lang="it"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tool Seals Torneo</title>
-  <script src="./Tool Seals Torneo AI Immagine_files/xlsx.full.min.js.Herunterladen"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f5f7fb; color: #1f2937; }
     .wrap { max-width: 1760px; margin: 0 auto; padding: 12px; }
@@ -107,7 +107,7 @@
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:stretch;">
           <div style="background:#312e81; border-radius:10px; padding:8px 12px; flex:1; min-width:160px;">
             <div style="color:#a5f3fc; font-size:11px; font-weight:700; margin-bottom:3px;">PASSO 1</div>
-            <div style="color:#e0e7ff; font-size:13px;">Vai su <a href="https://aistudio.google.com/" target="_blank" style="color:#fbbf24; font-weight:700;">aistudio.google.com</a></div>
+            <div style="color:#e0e7ff; font-size:13px;">Vai su <a href="https://aistudio.google.com" target="_blank" style="color:#fbbf24; font-weight:700;">aistudio.google.com</a></div>
           </div>
           <div style="background:#312e81; border-radius:10px; padding:8px 12px; flex:1; min-width:160px;">
             <div style="color:#a5f3fc; font-size:11px; font-weight:700; margin-bottom:3px;">PASSO 2</div>
@@ -124,7 +124,7 @@
         </div>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <label for="apiKeyInput" style="color:#c7d2fe; margin:0; font-size:13px; white-space:nowrap;">🔑 Gemini API Key:</label>
-          <input id="apiKeyInput" type="password" placeholder="AIzaSy..." autocomplete="off" oninput="saveApiKey(this.value)" style="flex:1; min-width:220px;">
+          <input id="apiKeyInput" type="password" placeholder="AIzaSy..." autocomplete="off" oninput="saveApiKey(this.value)" style="flex:1; min-width:220px;" />
           <span style="color:#86efac; font-size:12px; white-space:nowrap;">✓ 100% gratuito · salvato nel browser</span>
         </div>
       </div>
@@ -132,7 +132,7 @@
 
     <div style="margin-bottom:12px;">
       <label for="eventTitle">Titolo evento</label>
-      <input id="eventTitle" type="text" value="Tool Seals Torneo" style="max-width:520px;">
+      <input id="eventTitle" type="text" value="Tool Seals Torneo" style="max-width:520px;" />
     </div>
     <h1 id="pageTitle">Tool Seals Torneo</h1>
     <p class="muted">Interfaccia ottimizzata per inserire i risultati per round. Ogni round è globale per tutte le squadre. Classifica squadre e Top 5 giocatori visibili a destra.</p>
@@ -142,25 +142,38 @@
         <div class="card team-card">
           <h2>Regole punti</h2>
           <div class="row">
-            <div><label>Punti per kill</label><input id="killPoints" type="number" value="1"></div>
-            <div><label>1° posto</label><input id="firstBonus" type="number" value="15"></div>
-            <div><label>2° posto</label><input id="secondBonus" type="number" value="10"></div>
-            <div><label>3° posto</label><input id="thirdBonus" type="number" value="7"></div>
-            <div><label>4° e 5° posto</label><input id="fourthFifthBonus" type="number" value="3"></div>
+            <div><label>Punti per kill</label><input id="killPoints" type="number" value="1" /></div>
+            <div><label>1° posto</label><input id="firstBonus" type="number" value="15" /></div>
+            <div><label>2° posto</label><input id="secondBonus" type="number" value="10" /></div>
+            <div><label>3° posto</label><input id="thirdBonus" type="number" value="7" /></div>
+            <div><label>4° e 5° posto</label><input id="fourthFifthBonus" type="number" value="3" /></div>
           </div>
           <div class="section-space">
             <h3>Best Of</h3>
             <div class="row" style="grid-template-columns: 240px 220px 1fr;">
               <div class="subtle" style="display:flex; align-items:center; gap:10px;">
-                <input id="bestOfEnabled" type="checkbox" style="width:auto;">
+                <input id="bestOfEnabled" type="checkbox" style="width:auto;" />
                 <label for="bestOfEnabled" style="margin:0;">Attiva Best Of</label>
               </div>
               <div>
                 <label>Round da contare</label>
-                <input id="bestOfCount" type="number" min="1" step="1" value="3">
+                <input id="bestOfCount" type="number" min="1" step="1" value="3" />
               </div>
               <div class="muted" style="display:flex; align-items:center;">
                 Esempio: 4 round giocati, 3 contati. Il round peggiore viene escluso.
+              </div>
+            </div>
+          </div>
+
+          <div class="section-space">
+            <h3>Server separati</h3>
+            <div class="row" style="grid-template-columns: 240px 1fr;">
+              <div class="subtle" style="display:flex; align-items:center; gap:10px;">
+                <input id="separateServers" type="checkbox" style="width:auto;" />
+                <label for="separateServers" style="margin:0;">Attiva server separati</label>
+              </div>
+              <div class="muted" style="display:flex; align-items:center;">
+                (Più squadre possono ottenere lo stesso piazzamento)
               </div>
             </div>
           </div>
@@ -178,11 +191,7 @@
               <button class="btn danger" onclick="deleteActiveRound()">Elimina round attivo</button>
             </div>
           </div>
-          <div id="globalRoundTabs" class="tabs">
-    <button class="tab active" onclick="selectRound(&#39;gjtjdunapirmnxt0h7t&#39;)">
-      Round 1
-    </button>
-  </div>
+          <div id="globalRoundTabs" class="tabs"></div>
         </div>
 
         <div class="actions">
@@ -194,479 +203,21 @@
           <button class="btn secondary" onclick="safeResetAll()">Reimposta</button>
         </div>
 
-        <div id="teams">
-      <div class="card team-card">
-        <div class="team-head">
-          <div style="flex:1">
-            <div class="row3" style="margin-bottom: 12px;">
-              <div>
-                <label>Nome squadra</label>
-                <input type="text" value="Squadra Alpha" onchange="updateTeamName(&#39;bzcao9lsmxmnxt0h7t&#39;, this.value)">
-              </div>
-              <div class="subtle">
-                <strong>0 punti totali</strong><br>
-                <span class="muted">0 kill classifica</span>
-                
-              </div>
-            </div>
-
-            <h3>Giocatori</h3>
-            <div class="row2" style="margin-bottom:8px;">
-              <div class="mini muted"><strong>Nome giocatore</strong></div>
-              <div class="mini muted"><strong>Kill round attivo</strong></div>
-              <div></div>
-            </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 1" onchange="updatePlayerName(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;g5jsz3wdusmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;g5jsz3wdusmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;g5jsz3wdusmnxt0h7t&#39;)">X</button>
-              </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 2" onchange="updatePlayerName(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;roosy0uoa7lmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;roosy0uoa7lmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;roosy0uoa7lmnxt0h7t&#39;)">X</button>
-              </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 3" onchange="updatePlayerName(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;6tk8dayvxlbmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;6tk8dayvxlbmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;6tk8dayvxlbmnxt0h7t&#39;)">X</button>
-              </div>
-            
-            <div style="margin-bottom: 8px;">
-              <button class="btn secondary small" onclick="addPlayer(&#39;bzcao9lsmxmnxt0h7t&#39;)">Aggiungi giocatore</button>
-            </div>
-          </div>
-          <button class="btn danger small" onclick="removeTeam(&#39;bzcao9lsmxmnxt0h7t&#39;)">Elimina squadra</button>
-        </div>
-
-        <div class="section-space">
-          <h3>Round 1</h3>
-
-          <div class="row" style="margin-bottom: 12px;">
-            <div>
-              <label>Posizione</label>
-              <input type="number" min="1" value="" style="" oninput="updateRoundPlacement(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.value)">
-            </div>
-            <div><label>Kill totali round</label><div class="pill">0</div></div>
-            <div><label>Bonus posizione</label><div class="pill">0</div></div>
-            <div><label>Punti round</label><div class="pill">0</div></div>
-            <div>
-              <label>Stato</label>
-              <div class="subtle mini">Immagine posizione caricata ✓</div>
-            </div>
-          </div>
-
-          <!-- IMAGE UPLOAD SECTION -->
-          <div class="row3" style="margin-top: 12px; margin-bottom: 8px;">
-            <div class="subtle">
-              <label>📸 Immagine kills (RISULTATI)</label>
-              <div id="score-drop-x-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t" class="dropzone " onclick="triggerFile(&#39;score-file-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t&#39;)" data-ready="1" tabindex="0">
-                Clicca, trascina o incolla l'immagine risultati
-                <div class="hint">Schermata RISULTATI con tabella kills</div>
-              </div>
-              <input id="score-file-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleScoreUpload(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.files[0])">
-              <img id="score-preview-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t" class="img-preview">
-              <div class="muted mini">83A8A31B-FD72-461D-AD3D-9F3B9ED56B90.jpg</div>
-            </div>
-
-            <div class="subtle">
-              <label>🏆 Immagine posizione finale</label>
-              <div id="place-drop-x-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t" class="dropzone " onclick="triggerFile(&#39;place-file-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t&#39;)" data-ready="1" tabindex="0">
-                Clicca, trascina o incolla l'immagine posizione
-                <div class="hint">Schermata con "XX° posto" in basso a sinistra</div>
-              </div>
-              <input id="place-file-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handlePlaceUpload(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.files[0])">
-              <img id="place-preview-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t" class="img-preview">
-              <div class="muted mini">BED34E43-F8A3-4E47-BF1C-3FDD50AA0038.jpg</div>
-            </div>
-          </div>
-
-          <!-- AI ANALYZE BUTTON -->
-          <div style="margin-top: 10px;">
-            <button id="ai-btn-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t" class="btn ai" onclick="analyzeWithAI(&#39;bzcao9lsmxmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;)" disabled="">
-              🤖 Analizza con AI → riconosci posizione &amp; kills
-            </button>
-            <div id="ai-status-bzcao9lsmxmnxt0h7t-gjtjdunapirmnxt0h7t" class="ai-status"></div>
-          </div>
-        </div>
-      </div>
-    
-      <div class="card team-card">
-        <div class="team-head">
-          <div style="flex:1">
-            <div class="row3" style="margin-bottom: 12px;">
-              <div>
-                <label>Nome squadra</label>
-                <input type="text" value="Squadra Beta" onchange="updateTeamName(&#39;pv5o68v3y1mnxt0h7t&#39;, this.value)">
-              </div>
-              <div class="subtle">
-                <strong>0 punti totali</strong><br>
-                <span class="muted">0 kill classifica</span>
-                
-              </div>
-            </div>
-
-            <h3>Giocatori</h3>
-            <div class="row2" style="margin-bottom:8px;">
-              <div class="mini muted"><strong>Nome giocatore</strong></div>
-              <div class="mini muted"><strong>Kill round attivo</strong></div>
-              <div></div>
-            </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 4" onchange="updatePlayerName(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;o7brjcg9z5mnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;o7brjcg9z5mnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;o7brjcg9z5mnxt0h7t&#39;)">X</button>
-              </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 5" onchange="updatePlayerName(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;wdvm3342dubmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;wdvm3342dubmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;wdvm3342dubmnxt0h7t&#39;)">X</button>
-              </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 6" onchange="updatePlayerName(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;dxhtolmmx1cmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;dxhtolmmx1cmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;dxhtolmmx1cmnxt0h7t&#39;)">X</button>
-              </div>
-            
-            <div style="margin-bottom: 8px;">
-              <button class="btn secondary small" onclick="addPlayer(&#39;pv5o68v3y1mnxt0h7t&#39;)">Aggiungi giocatore</button>
-            </div>
-          </div>
-          <button class="btn danger small" onclick="removeTeam(&#39;pv5o68v3y1mnxt0h7t&#39;)">Elimina squadra</button>
-        </div>
-
-        <div class="section-space">
-          <h3>Round 1</h3>
-
-          <div class="row" style="margin-bottom: 12px;">
-            <div>
-              <label>Posizione</label>
-              <input type="number" min="1" value="" style="" oninput="updateRoundPlacement(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.value)">
-            </div>
-            <div><label>Kill totali round</label><div class="pill">0</div></div>
-            <div><label>Bonus posizione</label><div class="pill">0</div></div>
-            <div><label>Punti round</label><div class="pill">0</div></div>
-            <div>
-              <label>Stato</label>
-              <div class="subtle mini">Pronto</div>
-            </div>
-          </div>
-
-          <!-- IMAGE UPLOAD SECTION -->
-          <div class="row3" style="margin-top: 12px; margin-bottom: 8px;">
-            <div class="subtle">
-              <label>📸 Immagine kills (RISULTATI)</label>
-              <div id="score-drop-x-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t" class="dropzone " onclick="triggerFile(&#39;score-file-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t&#39;)" data-ready="1" tabindex="0">
-                Clicca, trascina o incolla l'immagine risultati
-                <div class="hint">Schermata RISULTATI con tabella kills</div>
-              </div>
-              <input id="score-file-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleScoreUpload(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.files[0])">
-              <img id="score-preview-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t" class="img-preview">
-              <div class="muted mini">Nessuna immagine</div>
-            </div>
-
-            <div class="subtle">
-              <label>🏆 Immagine posizione finale</label>
-              <div id="place-drop-x-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t" class="dropzone " onclick="triggerFile(&#39;place-file-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t&#39;)" data-ready="1" tabindex="0">
-                Clicca, trascina o incolla l'immagine posizione
-                <div class="hint">Schermata con "XX° posto" in basso a sinistra</div>
-              </div>
-              <input id="place-file-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handlePlaceUpload(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.files[0])">
-              <img id="place-preview-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t" class="img-preview">
-              <div class="muted mini">Nessuna immagine</div>
-            </div>
-          </div>
-
-          <!-- AI ANALYZE BUTTON -->
-          <div style="margin-top: 10px;">
-            <button id="ai-btn-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t" class="btn ai" onclick="analyzeWithAI(&#39;pv5o68v3y1mnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;)" disabled="">
-              🤖 Analizza con AI → riconosci posizione &amp; kills
-            </button>
-            <div id="ai-status-pv5o68v3y1mnxt0h7t-gjtjdunapirmnxt0h7t" class="ai-status"></div>
-          </div>
-        </div>
-      </div>
-    
-      <div class="card team-card">
-        <div class="team-head">
-          <div style="flex:1">
-            <div class="row3" style="margin-bottom: 12px;">
-              <div>
-                <label>Nome squadra</label>
-                <input type="text" value="Squadra Gamma" onchange="updateTeamName(&#39;67ty30fhk3tmnxt0h7t&#39;, this.value)">
-              </div>
-              <div class="subtle">
-                <strong>0 punti totali</strong><br>
-                <span class="muted">0 kill classifica</span>
-                
-              </div>
-            </div>
-
-            <h3>Giocatori</h3>
-            <div class="row2" style="margin-bottom:8px;">
-              <div class="mini muted"><strong>Nome giocatore</strong></div>
-              <div class="mini muted"><strong>Kill round attivo</strong></div>
-              <div></div>
-            </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 7" onchange="updatePlayerName(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;9ke8cmkavvmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;9ke8cmkavvmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;9ke8cmkavvmnxt0h7t&#39;)">X</button>
-              </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 8" onchange="updatePlayerName(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;i4o3mluhbrmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;i4o3mluhbrmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;i4o3mluhbrmnxt0h7t&#39;)">X</button>
-              </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 9" onchange="updatePlayerName(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;6riys1cu5xbmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;6riys1cu5xbmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;6riys1cu5xbmnxt0h7t&#39;)">X</button>
-              </div>
-            
-            <div style="margin-bottom: 8px;">
-              <button class="btn secondary small" onclick="addPlayer(&#39;67ty30fhk3tmnxt0h7t&#39;)">Aggiungi giocatore</button>
-            </div>
-          </div>
-          <button class="btn danger small" onclick="removeTeam(&#39;67ty30fhk3tmnxt0h7t&#39;)">Elimina squadra</button>
-        </div>
-
-        <div class="section-space">
-          <h3>Round 1</h3>
-
-          <div class="row" style="margin-bottom: 12px;">
-            <div>
-              <label>Posizione</label>
-              <input type="number" min="1" value="" style="" oninput="updateRoundPlacement(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.value)">
-            </div>
-            <div><label>Kill totali round</label><div class="pill">0</div></div>
-            <div><label>Bonus posizione</label><div class="pill">0</div></div>
-            <div><label>Punti round</label><div class="pill">0</div></div>
-            <div>
-              <label>Stato</label>
-              <div class="subtle mini">Pronto</div>
-            </div>
-          </div>
-
-          <!-- IMAGE UPLOAD SECTION -->
-          <div class="row3" style="margin-top: 12px; margin-bottom: 8px;">
-            <div class="subtle">
-              <label>📸 Immagine kills (RISULTATI)</label>
-              <div id="score-drop-x-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t" class="dropzone " onclick="triggerFile(&#39;score-file-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t&#39;)" data-ready="1" tabindex="0">
-                Clicca, trascina o incolla l'immagine risultati
-                <div class="hint">Schermata RISULTATI con tabella kills</div>
-              </div>
-              <input id="score-file-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleScoreUpload(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.files[0])">
-              <img id="score-preview-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t" class="img-preview">
-              <div class="muted mini">Nessuna immagine</div>
-            </div>
-
-            <div class="subtle">
-              <label>🏆 Immagine posizione finale</label>
-              <div id="place-drop-x-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t" class="dropzone " onclick="triggerFile(&#39;place-file-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t&#39;)" data-ready="1" tabindex="0">
-                Clicca, trascina o incolla l'immagine posizione
-                <div class="hint">Schermata con "XX° posto" in basso a sinistra</div>
-              </div>
-              <input id="place-file-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handlePlaceUpload(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.files[0])">
-              <img id="place-preview-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t" class="img-preview">
-              <div class="muted mini">Nessuna immagine</div>
-            </div>
-          </div>
-
-          <!-- AI ANALYZE BUTTON -->
-          <div style="margin-top: 10px;">
-            <button id="ai-btn-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t" class="btn ai" onclick="analyzeWithAI(&#39;67ty30fhk3tmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;)" disabled="">
-              🤖 Analizza con AI → riconosci posizione &amp; kills
-            </button>
-            <div id="ai-status-67ty30fhk3tmnxt0h7t-gjtjdunapirmnxt0h7t" class="ai-status"></div>
-          </div>
-        </div>
-      </div>
-    
-      <div class="card team-card">
-        <div class="team-head">
-          <div style="flex:1">
-            <div class="row3" style="margin-bottom: 12px;">
-              <div>
-                <label>Nome squadra</label>
-                <input type="text" value="Squadra Delta" onchange="updateTeamName(&#39;4eefinevmpmnxt0h7t&#39;, this.value)">
-              </div>
-              <div class="subtle">
-                <strong>0 punti totali</strong><br>
-                <span class="muted">0 kill classifica</span>
-                
-              </div>
-            </div>
-
-            <h3>Giocatori</h3>
-            <div class="row2" style="margin-bottom:8px;">
-              <div class="mini muted"><strong>Nome giocatore</strong></div>
-              <div class="mini muted"><strong>Kill round attivo</strong></div>
-              <div></div>
-            </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 10" onchange="updatePlayerName(&#39;4eefinevmpmnxt0h7t&#39;,&#39;li08yihh8omnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;4eefinevmpmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;li08yihh8omnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;4eefinevmpmnxt0h7t&#39;,&#39;li08yihh8omnxt0h7t&#39;)">X</button>
-              </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 11" onchange="updatePlayerName(&#39;4eefinevmpmnxt0h7t&#39;,&#39;uchktndnrkpmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;4eefinevmpmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;uchktndnrkpmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;4eefinevmpmnxt0h7t&#39;,&#39;uchktndnrkpmnxt0h7t&#39;)">X</button>
-              </div>
-            
-              <div class="row2">
-                <input type="text" value="Giocatore 12" onchange="updatePlayerName(&#39;4eefinevmpmnxt0h7t&#39;,&#39;53gsy6grooqmnxt0h7t&#39;, this.value)">
-                <input type="number" min="0" value="0" onchange="updateRoundPlayerKills(&#39;4eefinevmpmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;,&#39;53gsy6grooqmnxt0h7t&#39;, this.value)">
-                <button class="btn danger small" onclick="removePlayer(&#39;4eefinevmpmnxt0h7t&#39;,&#39;53gsy6grooqmnxt0h7t&#39;)">X</button>
-              </div>
-            
-            <div style="margin-bottom: 8px;">
-              <button class="btn secondary small" onclick="addPlayer(&#39;4eefinevmpmnxt0h7t&#39;)">Aggiungi giocatore</button>
-            </div>
-          </div>
-          <button class="btn danger small" onclick="removeTeam(&#39;4eefinevmpmnxt0h7t&#39;)">Elimina squadra</button>
-        </div>
-
-        <div class="section-space">
-          <h3>Round 1</h3>
-
-          <div class="row" style="margin-bottom: 12px;">
-            <div>
-              <label>Posizione</label>
-              <input type="number" min="1" value="" style="" oninput="updateRoundPlacement(&#39;4eefinevmpmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.value)">
-            </div>
-            <div><label>Kill totali round</label><div class="pill">0</div></div>
-            <div><label>Bonus posizione</label><div class="pill">0</div></div>
-            <div><label>Punti round</label><div class="pill">0</div></div>
-            <div>
-              <label>Stato</label>
-              <div class="subtle mini">Pronto</div>
-            </div>
-          </div>
-
-          <!-- IMAGE UPLOAD SECTION -->
-          <div class="row3" style="margin-top: 12px; margin-bottom: 8px;">
-            <div class="subtle">
-              <label>📸 Immagine kills (RISULTATI)</label>
-              <div id="score-drop-x-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t" class="dropzone " onclick="triggerFile(&#39;score-file-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t&#39;)" data-ready="1" tabindex="0">
-                Clicca, trascina o incolla l'immagine risultati
-                <div class="hint">Schermata RISULTATI con tabella kills</div>
-              </div>
-              <input id="score-file-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleScoreUpload(&#39;4eefinevmpmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.files[0])">
-              <img id="score-preview-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t" class="img-preview">
-              <div class="muted mini">Nessuna immagine</div>
-            </div>
-
-            <div class="subtle">
-              <label>🏆 Immagine posizione finale</label>
-              <div id="place-drop-x-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t" class="dropzone " onclick="triggerFile(&#39;place-file-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t&#39;)" data-ready="1" tabindex="0">
-                Clicca, trascina o incolla l'immagine posizione
-                <div class="hint">Schermata con "XX° posto" in basso a sinistra</div>
-              </div>
-              <input id="place-file-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t" type="file" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handlePlaceUpload(&#39;4eefinevmpmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;, this.files[0])">
-              <img id="place-preview-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t" class="img-preview">
-              <div class="muted mini">Nessuna immagine</div>
-            </div>
-          </div>
-
-          <!-- AI ANALYZE BUTTON -->
-          <div style="margin-top: 10px;">
-            <button id="ai-btn-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t" class="btn ai" onclick="analyzeWithAI(&#39;4eefinevmpmnxt0h7t&#39;,&#39;gjtjdunapirmnxt0h7t&#39;)" disabled="">
-              🤖 Analizza con AI → riconosci posizione &amp; kills
-            </button>
-            <div id="ai-status-4eefinevmpmnxt0h7t-gjtjdunapirmnxt0h7t" class="ai-status"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <div id="teams"></div>
       </div>
 
       <div>
         <div class="card team-card">
           <h2>Classifica squadre</h2>
-          <div id="leaderboard">
-    <div class="rank-item">
-      <strong>1. Squadra Alpha</strong><br>
-      <span class="muted">0 kill</span>
-      <br>
-      <strong>0 punti</strong>
-    </div>
-  
-    <div class="rank-item">
-      <strong>2. Squadra Beta</strong><br>
-      <span class="muted">0 kill</span>
-      <br>
-      <strong>0 punti</strong>
-    </div>
-  
-    <div class="rank-item">
-      <strong>3. Squadra Delta</strong><br>
-      <span class="muted">0 kill</span>
-      <br>
-      <strong>0 punti</strong>
-    </div>
-  
-    <div class="rank-item">
-      <strong>4. Squadra Gamma</strong><br>
-      <span class="muted">0 kill</span>
-      <br>
-      <strong>0 punti</strong>
-    </div>
-  </div>
+          <div id="leaderboard"></div>
         </div>
         <div class="card team-card">
           <h2>Squadra vincitrice</h2>
-          <div id="winner">
-    <strong>Squadra Alpha</strong><br>
-    <span class="muted">0 punti</span><br>
-    <span class="muted">0 kill</span>
-  </div>
+          <div id="winner"></div>
         </div>
         <div class="card team-card">
           <h2>Top 5 giocatori per kill</h2>
-          <div id="topPlayers">
-    <div class="rank-item">
-      <strong>1. Giocatore 1</strong><br>
-      <span class="muted">Squadra Alpha</span><br>
-      <strong>0 kill</strong>
-    </div>
-  
-    <div class="rank-item">
-      <strong>1. Giocatore 10</strong><br>
-      <span class="muted">Squadra Delta</span><br>
-      <strong>0 kill</strong>
-    </div>
-  
-    <div class="rank-item">
-      <strong>1. Giocatore 11</strong><br>
-      <span class="muted">Squadra Delta</span><br>
-      <strong>0 kill</strong>
-    </div>
-  
-    <div class="rank-item">
-      <strong>1. Giocatore 12</strong><br>
-      <span class="muted">Squadra Delta</span><br>
-      <strong>0 kill</strong>
-    </div>
-  
-    <div class="rank-item">
-      <strong>1. Giocatore 2</strong><br>
-      <span class="muted">Squadra Alpha</span><br>
-      <strong>0 kill</strong>
-    </div>
-  </div>
+          <div id="topPlayers"></div>
         </div>
       </div>
     </div>
@@ -862,6 +413,13 @@ function safeResetAll() {
 }
 
 function validateRoundPlacements(roundId) {
+  if (document.getElementById("separateServers")?.checked) {
+    for (const team of teams) {
+      const round = team.rounds?.[roundId];
+      if (round) round.placementError = false;
+    }
+    return;
+  }
   const counts = {};
   for (const team of teams) {
     const round = team.rounds?.[roundId];
@@ -1538,6 +1096,7 @@ document.getElementById("eventTitle").addEventListener("input", e => {
   document.getElementById(id).addEventListener("input", render);
 });
 document.getElementById("bestOfEnabled").addEventListener("change", render);
+document.getElementById("separateServers").addEventListener("change", render);
 document.getElementById("bestOfCount").addEventListener("input", render);
 document.getElementById("fileLoader").addEventListener("change", function(e) {
   handleTournamentFileLoad(e.target.files?.[0]);
@@ -1546,6 +1105,5 @@ document.getElementById("fileLoader").addEventListener("change", function(e) {
 
 if (!loadAutoSave()) { resetAll(); } else { render(); }
 </script>
-
-
-</body></html>
+</body>
+</html>
