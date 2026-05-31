@@ -216,7 +216,7 @@
           <div id="winner"></div>
         </div>
         <div class="card team-card">
-          <h2>Top 5 giocatori per kill</h2>
+          <h2>Classifica giocatori per kill</h2>
           <div id="topPlayers"></div>
         </div>
       </div>
@@ -390,7 +390,7 @@ function rankedPlayers() {
     if (lastKills === null || row.kills !== lastKills) { currentRank = seen; lastKills = row.kills; }
     row.rank = currentRank;
   }
-  return sorted.slice(0, 5);
+  return sorted;
 }
 
 // ---- ROUND MANAGEMENT ----
